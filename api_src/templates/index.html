@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Prediction Vs Real Data</title>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/data.js"></script>
+<script src="https://code.highcharts.com/stock/modules/drag-panes.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+
+
+
+</head>
+<body>
+<div><input id="dt_text" type="date"><button onclick="get_data()">Submit</button></div>
+<div id="container" style="height: 400px; min-width: 310px"></div>
+<div id="containerreal" style="height: 400px; min-width: 310px"></div>
+
+<script>
+function get_data() {
+
+date = document.getElementById("dt_text").value
+
+    Highcharts.getJSON('/api/predicted?starttime='+date+'&endtime=1586862150', function (data) {
+
+    // split the data set into ohlc and volume
+    var ohlc = [],
+        volume = [],
+     ohlc_real = [],volume_real=[]
+        //data =data.predictions
+        parsedData=JSON.parse(data.pred)
+        parsedData_real = JSON.parse(data.real)
+        datapred= parsedData
+        datareal = parsedData_real
+
+        dataLengthpred = Object.keys(datapred[0]).length,
+        dataLengthreal = Object.keys(datareal['open']).length
+        // set the allowed units for data grouping
+        groupingUnits = [[
+            'hour',                         // unit name
+            [1,2,3]                             // allowed multiples
+        ]],
+
+        i = 0;
+
+    for (i; i < dataLengthpred; i += 1) {
+        ohlc.push([
+            datapred['time'][i], // the date
+            datapred[0][i], // open
+            datapred[1][i], // high
+            datapred[2][i], // low
+            datapred[3][i] // close
+        ]);
+
+        volume.push([
+            datapred['time'][i], // the date
+            datapred[4][i] // the volume
+        ]);
+    }
+    j=0;
+    for (j; j < dataLengthreal; j += 1) {
+        ohlc_real.push([
+            datareal['time'][j], // the date
+            datareal['open'][j], // open
+            datareal['high'][j], // high
+            datareal['low'][j], // low
+            datareal['close'][j] // close
+        ]);
+
+        volume_real.push([
+            datareal['time'][j], // the date
+            datareal['Volume'][j] // the volume
+        ]);
+    }
+
+
+    // create the chart
+    Highcharts.stockChart('container', {
+
+        rangeSelector: {
+            selected: 1
+        },
+
+        title: {
+            text: 'Predicted Data for 1 week'
+        },
+
+        yAxis: [{
+            labels: {
+                align: 'right',
+                x: -3
+            },
+            title: {
+                text: 'OHLC'
+            },
+            height: '50%',
+            lineWidth: 2,
+            resize: {
+                enabled: true
+            }
+        }, {
+            labels: {
+                align: 'right',
+                x: -3
+            },
+            title: {
+                text: 'Volume'
+            },
+            top: '65%',
+            height: '35%',
+            offset: 0,
+            lineWidth: 2
+        }],
+
+        tooltip: {
+            split: true
+        },
+
+        series: [{
+            type: 'candlestick',
+            name: 'AAPL',
+            data: ohlc,
+            dataGrouping: {
+                units: groupingUnits
+            }
+        }, {
+            type: 'column',
+            name: 'Volume',
+            data: volume,
+            yAxis: 1,
+            dataGrouping: {
+                units: groupingUnits
+            }
+        }]
+    });
+    Highcharts.stockChart('containerreal', {
+
+        rangeSelector: {
+            selected: 1
+        },
+
+        title: {
+            text: 'Real Data Available'
+        },
+
+        yAxis: [{
+            labels: {
+                align: 'right',
+                x: -3
+            },
+            title: {
+                text: 'OHLC'
+            },
+            height: '50%',
+            lineWidth: 2,
+            resize: {
+                enabled: true
+            }
+        }, {
+            labels: {
+                align: 'right',
+                x: -3
+            },
+            title: {
+                text: 'Volume'
+            },
+            top: '65%',
+            height: '35%',
+            offset: 0,
+            lineWidth: 2
+        }],
+
+        tooltip: {
+            split: true
+        },
+
+        series: [{
+            type: 'candlestick',
+            name: 'AAPL',
+            data: ohlc_real,
+            dataGrouping: {
+                units: groupingUnits
+            }
+        }, {
+            type: 'column',
+            name: 'Volume',
+            data: volume_real,
+            yAxis: 1,
+            dataGrouping: {
+                units: groupingUnits
+            }
+        }]
+    });
+});
+}
+</script>
+</body>
+</html>
