@@ -1,2 +1,3 @@
 # trading_bot
-Prediction Bot for Trading 
+Stock Price prediction using LSTM 
+
